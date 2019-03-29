@@ -1,0 +1,177 @@
+---
+title: "parse_spreadsheets"
+author: "bryan"
+date: "`r format(Sys.time(), '%d %B %Y')`"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(readxl)
+```
+
+## Introduction
+
+* Nutrient analysis is done on autoanalyzer and the results are returned as an untidy spreadsheet.
+* Need to read the spreadsheet
+* eliminate un-needed data (calibration stuff mostly)
+    * these are mostly !is.na(name)
+* correct readings by subtracting out the blanks
+    * analysis done in batches with each batch (usually) bracketed by 2 blanks at the beginning and two at the end
+    * the last batch only has blanks at the beginning.
+    
+## data sources
+* spreadsheets received from Adam Pimienta and stored in here::here('data') directory.
+* current data files:
+
+```{r data_sources, echo = FALSE}
+# get a list of the files
+files <- list.files(here::here('data/raw'))
+# remove temp files
+files <- files[grep("~", files, invert = TRUE)]
+
+# print list of files
+print(files)
+```
+
+## data steps
+* write two functions to process the data
+* function "nut_data" reads a spreadsheet with the nutrient data
+    * selects and renames the columns
+    * filter out the calibration readings (type == "unknown")
+    * parse name into "sample_date" and "sample_site"
+    * add header info to data file as columns "run_name", "run_date", "operator"
+    * process blanks (see below) and correct concentrations (um - blank_um)
+
+* function "find_outs": is a subroutine for function "nut_data"
+    * reads formatted data.frame from "nut_data" for a specified nutrient ("n" or "p")
+    * selects only the data for "blanks"
+    * tests for and removes outliers using boxplot (outliers are values outside 1.5 x the IQR)
+    * calculates the means of successive (if they exist) blanks
+    * returns a data frame with blanks and means(blanks) for each sample
+    
+* process the 4 files received from Stephen Shivers
+* save results as .csv in folder "output"
+    
+```{r nut_data}
+#' function to organize autoanalyzer nutrient data and correct concentrations for blanks
+#' 
+#' @param xlsx an untidy excel spreadsheet with the autoanalyzer data
+nut_data <- function(xlsx) {
+
+#read data & header info
+f <- read_excel(xlsx, skip = 5)
+h <- read_excel(xlsx, n_max = 3, col_names = FALSE)
+
+# rename columns
+names(f) <- tolower(names(f)) 
+f <- rename(f, peak = "peak#", 
+                n_raw_ht = "raw ht", n_cor_ht = "cor ht", n_um = um,
+                p_raw_ht = "raw ht__1", p_cor_ht = "cor ht__1", p_um = um__1)
+
+# filter type == "unknown"
+f <- filter(f, type == "Unknown")
+
+# parse name
+y <- as.data.frame(str_split_fixed(f$name, " ", 2))
+f$sample_date <- y[ , 1]
+f$sample_site <- y[ , 2]
+
+# create new id to parse identifier duplicates
+f$id <-unlist(strsplit(f$identifier, "dup"))
+
+# add header info to file
+h <- read_excel(path = paste0(here::here('data/raw'), "/", files[i]), n_max = 3, col_names = FALSE)
+f$run_name <- unlist(strsplit(as.character(h[1, 1]), ": "))[2]
+f$run_date <- unlist(strsplit(as.character(h[2, 1]), ": "))[2]
+f$operator <- unlist(strsplit(as.character(h[3, 1]), ": "))[2]
+
+# select and reorder fields
+f <- select(f, name, sample_date, sample_site, peak, position, identifier, id,
+            n_raw_ht, n_cor_ht, n_um, p_raw_ht, p_cor_ht, p_um,
+            run_name, run_date, operator)
+
+# use find_outs to remove outliers and get means for blanks by id
+bn <- find_outs(f, 'n')
+bp <- find_outs(f, 'p')
+
+# add blanks data to samples
+s <- filter(f, sample_site != "milliQ") %>%
+      left_join(bn) %>%
+      left_join(bp)
+
+# correct n_um and p_um
+out <- mutate(s, n_um_cor = n_um - n_mean_b_um, p_um_cor = p_um - p_mean_b_um)
+
+return(out)
+}
+```
+
+```{r find_outs}
+#' function to find and remove outliers from blanks
+#' 
+#' @param df a dataframe of values from function ??????
+#' @param nutrient this will be 'n' or 'p'
+find_outs <- function(df, nutrient = 'n') {
+# filter, select and rename fields
+b <- filter(df, sample_site == "milliQ") %>%
+        select(id1 = identifier, b_um = paste0(nutrient, "_um"))
+
+# use boxplot to find outliers.  outliers are values outside 1.5 * the IQR
+outliers <- boxplot(b$b_um, plot = FALSE)$out
+
+# remove outliers
+witch <- which(b$b_um %in% outliers)
+if(length(witch) > 0) b <- slice(b, -witch)
+
+# get means of consecutive blanks
+b1 <- data.frame(id1 = as.numeric(c(1, b$id1)), id2 = as.numeric(c(b$id1, nrow(df))),
+                 b_um1 = c(NA, b$b_um), b_um2 = c(b$b_um, NA)) 
+
+b1 <- mutate(b1, mean_b_um = rowMeans(select(b1, b_um1, b_um2), na.rm = TRUE))
+
+# loop through rows and create output
+out <- c()
+for(i in 1:nrow(b1)){
+if(b1$id2[i]-b1$id1[i] > 1) {
+a <- data.frame(id = seq((b1$id1[i] + 1), (b1$id2[i])), 
+                b_um1 = b1$b_um1[i], b_um2 = b1$b_um2[i], mean_b_um = b1$mean_b_um[i])
+out <- rbind(out, a)
+}}
+
+# add nutrient to names and ouput
+out <- mutate(out, id = as.character(id))
+names(out)[-1] <- paste0(nutrient, '_', names(out)[-1])
+return(out)
+}
+```
+
+```{r process_data}
+# process all files
+for(i in 1:length(files)){
+x <- nut_data(paste0(here::here('data/raw'), "/", files[i]))
+write.csv(x, paste0(here::here('output'), '/', x$run_name[1], '.csv'), row.names = FALSE)
+}
+```
+
+## data definitions for added or modified fields
+
+field  | data definition
+----------- | -----------------------------------------------------------------------------------------
+sample_date  | parsed from the name field. If this is a sample this the first of the name field
+sample_site  | parsed from the name field. If this is a sample this the second part of the name field
+id | parsed from the "identifier" field. Some identifiers have a number + "dup"; "dup" is removed
+run_name | added from the header
+run_date | added from the header
+operator | added from the header
+p_b_um1 | value of first phosphorus blank in a group
+p_b_um2 | value of second phosphorus blank in a group
+p_mean_b_um | mean of p_b_um1 & p_b_um2 (or value if one is missing)
+p_um_cor | corrected phosphorus concentration (p_um - p_mean_b_um)  
+n_b_um1 | value of first nitrogen blank in a group
+n_b_um2 | value of second nitrogen blank in a group
+n_mean_b_um | mean of n_b_um1 & n_b_um2 (or value if one is missing)
+n_um_cor | corrected nitrogen concentration (n_um - n_mean_b_um) 
+
+
