@@ -57,7 +57,7 @@ print(files)
 ```{r nut_data}
 #' function to organize autoanalyzer nutrient data and correct concentrations for blanks
 #' 
-#' @param xlsx an untidy excel spreadsheet with the autoanalyzer data
+#' @param xlsx path to an untidy excel spreadsheet with the autoanalyzer data
 nut_data <- function(xlsx) {
 
 #read data & header info
@@ -121,9 +121,10 @@ b <- filter(df, sample_site == "milliQ") %>%
 # use boxplot to find outliers.  outliers are values outside 1.5 * the IQR
 outliers <- boxplot(b$b_um, plot = FALSE)$out
 
-# remove outliers
+# change outliers to NA
 witch <- which(b$b_um %in% outliers)
-if(length(witch) > 0) b <- slice(b, -witch)
+b$b_um[witch] <- NA
+
 
 # get means of consecutive blanks
 b1 <- data.frame(id1 = as.numeric(c(1, b$id1)), id2 = as.numeric(c(b$id1, nrow(df))),
