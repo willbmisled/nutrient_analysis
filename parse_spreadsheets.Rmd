@@ -164,24 +164,21 @@ peak | sequential order of samples - some calibration samples removed so not com
 name | the sample name often this is sample date and site
 position | not sure what this is.  Probably indicates position sample was loaded into analyzer
 identifier | appear to be a unique identifier for sample.  Some are labelled "dup" for duplicate.
-run_name | added from the header
-run_date | added from the header
-operator | added from the header
 n_raw_ht | from the operator.  Added "n_" to indicate this is a nitrogen sample	
 n_cor_ht | from the operator.  Added "n_" to indicate this is a nitrogen sample	
 n_um | from the operator.  Added "n_" to indicate this is a nitrogen sample.  This is the uncorrected nitrogen concentration.	
-n_b_um1 | value of first nitrogen blank in a group of observations
-n_b_um2 | value of second nitrogen blank in a group of observations
-n_mean_b_um | mean of n_b_um1 & n_b_um2 (or value if one is missing); NA means both were missing
-p_b_um1 | value of first phosphorus blank in a group of observations
-p_b_um2 | value of second phosphorus blank in a group
-p_mean_b_um | mean of p_b_um1 & p_b_um2 (or value if one is missing); NA means both were missing
-p_um_cor | corrected phosphorus concentration (p_um - p_mean_b_um)  
-n_b_um1 | value of first nitrogen blank in a group of observations
-n_b_um2 | value of second nitrogen blank in a group of observations
-n_mean_b_um | mean of n_b_um1 & n_b_um2 (or value if one is missing)
-n_um_cor | corrected nitrogen concentration (n_um - n_mean_b_um); NOTE if NA this could mean that n_um &/or n_mean_b_um is missing.  Check manually. 
-p_um_cor | corrected phosphorus concentration (p_um - p_mean_b_um); NOTE if NA this could mean that p_um &/or p_mean_b_um is missing.  Check manually. 
+n_um_cor | corrected nitrogen concentration (n_um - n_mean_b_um); NOTE if NA this could mean that n_um &/or n_mean_b_um is missing.  Check manually.
+n_b_um1 | value of first nitrogen blank in a group of observations; NA indicates value is an outlier or missing.
+n_b_um2 | value of second nitrogen blank in a group of observations; NA indicates value is an outlier or missing.
+p_raw_ht | from the operator.  Added "p_" to indicate this is a phosphorus sample	
+p_cor_ht | from the operator.  Added "p_" to indicate this is a phosphorus sample	
+p_um | from the operator.  Added "p_" to indicate this is a phosphorus sample.  This is the uncorrected phosphorus concentration.	
+p_um_cor | corrected phosphorus concentration (p_um - p_meap_b_um); NOTE if NA this could mean that p_um &/or p_mean_b_um is missing.  Check manually.
+p_b_um1 | value of first phosphorus blank in a group of observations; NA indicates value is an outlier or missing.
+p_b_um2 | value of second phosphorus blank in a group of observations; NA indicates value is an outlier or missing.
+run_name | added from the header; this must be the identifier for the sample run.
+run_date | added from the header; this must be the date the sample was run.
+operator | added from the header; this must be the person who ran the sample.
 
 
 	

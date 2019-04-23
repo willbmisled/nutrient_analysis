@@ -375,76 +375,64 @@ data definitions
 <td>appear to be a unique identifier for sample. Some are labelled &quot;dup&quot; for duplicate.</td>
 </tr>
 <tr class="odd">
-<td>run_name</td>
-<td>added from the header</td>
-</tr>
-<tr class="even">
-<td>run_date</td>
-<td>added from the header</td>
-</tr>
-<tr class="odd">
-<td>operator</td>
-<td>added from the header</td>
-</tr>
-<tr class="even">
 <td>n_raw_ht</td>
 <td>from the operator. Added &quot;n_&quot; to indicate this is a nitrogen sample</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>n_cor_ht</td>
 <td>from the operator. Added &quot;n_&quot; to indicate this is a nitrogen sample</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>n_um</td>
 <td>from the operator. Added &quot;n_&quot; to indicate this is a nitrogen sample. This is the uncorrected nitrogen concentration.</td>
 </tr>
-<tr class="odd">
-<td>n_b_um1</td>
-<td>value of first nitrogen blank in a group of observations</td>
-</tr>
 <tr class="even">
-<td>n_b_um2</td>
-<td>value of second nitrogen blank in a group of observations</td>
-</tr>
-<tr class="odd">
-<td>n_mean_b_um</td>
-<td>mean of n_b_um1 &amp; n_b_um2 (or value if one is missing); NA means both were missing</td>
-</tr>
-<tr class="even">
-<td>p_b_um1</td>
-<td>value of first phosphorus blank in a group of observations</td>
-</tr>
-<tr class="odd">
-<td>p_b_um2</td>
-<td>value of second phosphorus blank in a group</td>
-</tr>
-<tr class="even">
-<td>p_mean_b_um</td>
-<td>mean of p_b_um1 &amp; p_b_um2 (or value if one is missing); NA means both were missing</td>
-</tr>
-<tr class="odd">
-<td>p_um_cor</td>
-<td>corrected phosphorus concentration (p_um - p_mean_b_um)</td>
-</tr>
-<tr class="even">
-<td>n_b_um1</td>
-<td>value of first nitrogen blank in a group of observations</td>
-</tr>
-<tr class="odd">
-<td>n_b_um2</td>
-<td>value of second nitrogen blank in a group of observations</td>
-</tr>
-<tr class="even">
-<td>n_mean_b_um</td>
-<td>mean of n_b_um1 &amp; n_b_um2 (or value if one is missing)</td>
-</tr>
-<tr class="odd">
 <td>n_um_cor</td>
 <td>corrected nitrogen concentration (n_um - n_mean_b_um); NOTE if NA this could mean that n_um &amp;/or n_mean_b_um is missing. Check manually.</td>
 </tr>
+<tr class="odd">
+<td>n_b_um1</td>
+<td>value of first nitrogen blank in a group of observations; NA indicates value is an outlier or missing.</td>
+</tr>
+<tr class="even">
+<td>n_b_um2</td>
+<td>value of second nitrogen blank in a group of observations; NA indicates value is an outlier or missing.</td>
+</tr>
+<tr class="odd">
+<td>p_raw_ht</td>
+<td>from the operator. Added &quot;p_&quot; to indicate this is a phosphorus sample</td>
+</tr>
+<tr class="even">
+<td>p_cor_ht</td>
+<td>from the operator. Added &quot;p_&quot; to indicate this is a phosphorus sample</td>
+</tr>
+<tr class="odd">
+<td>p_um</td>
+<td>from the operator. Added &quot;p_&quot; to indicate this is a phosphorus sample. This is the uncorrected phosphorus concentration.</td>
+</tr>
 <tr class="even">
 <td>p_um_cor</td>
-<td>corrected phosphorus concentration (p_um - p_mean_b_um); NOTE if NA this could mean that p_um &amp;/or p_mean_b_um is missing. Check manually.</td>
+<td>corrected phosphorus concentration (p_um - p_meap_b_um); NOTE if NA this could mean that p_um &amp;/or p_mean_b_um is missing. Check manually.</td>
+</tr>
+<tr class="odd">
+<td>p_b_um1</td>
+<td>value of first phosphorus blank in a group of observations; NA indicates value is an outlier or missing.</td>
+</tr>
+<tr class="even">
+<td>p_b_um2</td>
+<td>value of second phosphorus blank in a group of observations; NA indicates value is an outlier or missing.</td>
+</tr>
+<tr class="odd">
+<td>run_name</td>
+<td>added from the header; this must be the identifier for the sample run.</td>
+</tr>
+<tr class="even">
+<td>run_date</td>
+<td>added from the header; this must be the date the sample was run.</td>
+</tr>
+<tr class="odd">
+<td>operator</td>
+<td>added from the header; this must be the person who ran the sample.</td>
 </tr>
 </tbody>
 </table>
