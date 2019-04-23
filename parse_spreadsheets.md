@@ -1,7 +1,7 @@
 parse\_spreadsheets
 ================
 bryan
-19 April 2019
+23 April 2019
 
 Introduction
 ------------
@@ -55,6 +55,8 @@ data steps
 -   save results as .csv in folder "output"
 
 ``` r
+# i <-1; xlsx <- paste0(here::here('data/raw'), "/", files[i])
+
 #' function to organize autoanalyzer nutrient data and correct concentrations for blanks
 #' 
 #' @param xlsx path to an untidy excel spreadsheet with the autoanalyzer data
@@ -64,26 +66,20 @@ nut_data <- function(xlsx) {
 f <- read_excel(xlsx, skip = 5)
 h <- read_excel(xlsx, n_max = 3, col_names = FALSE)
 
-# rename columns
-names(f) <- tolower(names(f)) 
-f <- rename(f, peak = "peak#", 
-                n_raw_ht = "raw ht", n_cor_ht = "cor ht", n_um = um,
-                p_raw_ht = "raw ht__1", p_cor_ht = "cor ht__1", p_um = um__1)
+# select & rename columns
+f <- f[1:11]
+names(f) <- c("peak", "position", "identifier", "name", "type",
+              "n_raw_ht", "n_cor_ht", "n_um",
+              "p_raw_ht", "p_cor_ht", "p_um")
 
 # filter type == "unknown" and change non-numeric values of n_um and p_um to NA
 f <- filter(f, type == "Unknown") %>%
       mutate(n_um = as.numeric(n_um), p_um = as.numeric(p_um))
 
 # add header info to file
-h <- read_excel(path = paste0(here::here('data/raw'), "/", files[i]), n_max = 3, col_names = FALSE)
 f$run_name <- unlist(strsplit(as.character(h[1, 1]), ": "))[2]
 f$run_date <- unlist(strsplit(as.character(h[2, 1]), ": "))[2]
 f$operator <- unlist(strsplit(as.character(h[3, 1]), ": "))[2]
-
-# select and reorder fields
-f <- select(f, peak, name, position, identifier, 
-            n_raw_ht, n_cor_ht, n_um, p_raw_ht, p_cor_ht, p_um,
-            run_name, run_date, operator)
 
 # use find_outs to remove outliers and get means for blanks by id
 bn <- find_outs(f, 'n')
@@ -94,8 +90,18 @@ s <- slice(f, -grep("milliQ", f$name)) %>%
       left_join(bn) %>%
       left_join(bp)
 
-# correct n_um and p_um
-out <- mutate(s, n_um_cor = n_um - n_mean_b_um, p_um_cor = p_um - p_mean_b_um)
+# correct n_um and p_um & reorder fields
+out <- mutate(s, n_um_cor = n_um - n_mean_b_um, p_um_cor = p_um - p_mean_b_um) %>%
+        select(peak, name, position, identifier,
+               n_raw_ht, n_cor_ht, n_um, n_um_cor, n_b_um1, n_b_um2, n_mean_b_um, 
+               p_raw_ht, p_cor_ht, p_um, p_um_cor, p_b_um1, p_b_um2, p_mean_b_um,
+               run_name, run_date, operator)
+
+# select and reorder fields
+f <- select(f, peak, name, position, identifier, 
+            n_raw_ht, n_cor_ht, n_um, p_raw_ht, p_cor_ht, p_um,
+            run_name, run_date, operator)
+
 
 return(out)
 }
@@ -143,57 +149,199 @@ return(out)
 ``` r
 # process all files
 for(i in 1:length(files)){
-x <- nut_data(paste0(here::here('data/raw'), "/", files[i]))
-write.csv(x, paste0(here::here('output'), '/', x$run_name[1], '.csv'), row.names = FALSE)
-}
-```
-
-    ## Joining, by = "peak"
-    ## Joining, by = "peak"
-    ## Joining, by = "peak"
-    ## Joining, by = "peak"
-
-    ## Warning in evalq(as.numeric(p_um), <environment>): NAs introduced by
-    ## coercion
-
-    ## Joining, by = "peak"
-    ## Joining, by = "peak"
-    ## Joining, by = "peak"
-    ## Joining, by = "peak"
-    ## Joining, by = "peak"
-    ## Joining, by = "peak"
-    ## Joining, by = "peak"
-    ## Joining, by = "peak"
-    ## Joining, by = "peak"
-    ## Joining, by = "peak"
-    ## Joining, by = "peak"
-    ## Joining, by = "peak"
-    ## Joining, by = "peak"
-    ## Joining, by = "peak"
-    ## Joining, by = "peak"
-    ## Joining, by = "peak"
-    ## Joining, by = "peak"
-    ## Joining, by = "peak"
-    ## Joining, by = "peak"
-    ## Joining, by = "peak"
-    ## Joining, by = "peak"
-    ## Joining, by = "peak"
-
-``` r
-##########  Fix this.
-
 x <- tryCatch(nut_data(paste0(here::here('data/raw'), "/", files[i])), 
               error = function(e) 
                 print(paste0("Warning: ", files[i], " did not parse")))
-```
-
-    ## Joining, by = "peak"
-    ## Joining, by = "peak"
-
-``` r
 if(is.data.frame(x)) write.csv(x, paste0(here::here('output'), '/', x$run_name[1], '.csv'), 
                                row.names = FALSE)
+}
 ```
+
+    ## New names:
+    ## * `Raw Ht` -> `Raw Ht...6`
+    ## * `Cor Ht` -> `Cor Ht...7`
+    ## * uM -> uM...8
+    ## * `Raw Ht` -> `Raw Ht...9`
+    ## * `Cor Ht` -> `Cor Ht...10`
+    ## * ... and 7 more problems
+
+    ## New names:
+    ## * `` -> ...1
+
+    ## Joining, by = "peak"
+    ## Joining, by = "peak"
+
+    ## New names:
+    ## * `Raw Ht` -> `Raw Ht...6`
+    ## * `Cor Ht` -> `Cor Ht...7`
+    ## * uM -> uM...8
+    ## * `Raw Ht` -> `Raw Ht...9`
+    ## * `Cor Ht` -> `Cor Ht...10`
+    ## * ... and 7 more problems
+
+    ## New names:
+    ## * `` -> ...1
+
+    ## Joining, by = "peak"
+    ## Joining, by = "peak"
+
+    ## New names:
+    ## * `Raw Ht` -> `Raw Ht...6`
+    ## * `Cor Ht` -> `Cor Ht...7`
+    ## * uM -> uM...8
+    ## * `Raw Ht` -> `Raw Ht...9`
+    ## * `Cor Ht` -> `Cor Ht...10`
+    ## * ... and 7 more problems
+
+    ## New names:
+    ## * `` -> ...1
+
+    ## Warning in rlang::eval_tidy(~as.numeric(p_um), <environment>): NAs
+    ## introduced by coercion
+
+    ## Joining, by = "peak"
+
+    ## Joining, by = "peak"
+
+    ## New names:
+    ## * `Raw Ht` -> `Raw Ht...6`
+    ## * `Cor Ht` -> `Cor Ht...7`
+    ## * uM -> uM...8
+    ## * `Raw Ht` -> `Raw Ht...9`
+    ## * `Cor Ht` -> `Cor Ht...10`
+    ## * ... and 1 more problem
+
+    ## New names:
+    ## * `` -> ...1
+
+    ## Joining, by = "peak"
+    ## Joining, by = "peak"
+
+    ## New names:
+    ## * `Raw Ht` -> `Raw Ht...6`
+    ## * `Cor Ht` -> `Cor Ht...7`
+    ## * uM -> uM...8
+    ## * `Raw Ht` -> `Raw Ht...9`
+    ## * `Cor Ht` -> `Cor Ht...10`
+    ## * ... and 7 more problems
+
+    ## New names:
+    ## * `` -> ...1
+
+    ## Joining, by = "peak"
+    ## Joining, by = "peak"
+
+    ## New names:
+    ## * `Raw Ht` -> `Raw Ht...6`
+    ## * `Cor Ht` -> `Cor Ht...7`
+    ## * uM -> uM...8
+    ## * `Raw Ht` -> `Raw Ht...9`
+    ## * `Cor Ht` -> `Cor Ht...10`
+    ## * ... and 7 more problems
+
+    ## New names:
+    ## * `` -> ...1
+
+    ## Joining, by = "peak"
+    ## Joining, by = "peak"
+
+    ## New names:
+    ## * `Raw Ht` -> `Raw Ht...6`
+    ## * `Cor Ht` -> `Cor Ht...7`
+    ## * uM -> uM...8
+    ## * `Raw Ht` -> `Raw Ht...9`
+    ## * `Cor Ht` -> `Cor Ht...10`
+    ## * ... and 7 more problems
+
+    ## New names:
+    ## * `` -> ...1
+
+    ## Joining, by = "peak"
+    ## Joining, by = "peak"
+
+    ## New names:
+    ## * `Raw Ht` -> `Raw Ht...6`
+    ## * `Cor Ht` -> `Cor Ht...7`
+    ## * uM -> uM...8
+    ## * `Raw Ht` -> `Raw Ht...9`
+    ## * `Cor Ht` -> `Cor Ht...10`
+    ## * ... and 7 more problems
+
+    ## New names:
+    ## * `` -> ...1
+
+    ## Joining, by = "peak"
+    ## Joining, by = "peak"
+
+    ## New names:
+    ## * `Raw Ht` -> `Raw Ht...6`
+    ## * `Cor Ht` -> `Cor Ht...7`
+    ## * uM -> uM...8
+    ## * `Raw Ht` -> `Raw Ht...9`
+    ## * `Cor Ht` -> `Cor Ht...10`
+    ## * ... and 7 more problems
+
+    ## New names:
+    ## * `` -> ...1
+
+    ## Joining, by = "peak"
+    ## Joining, by = "peak"
+
+    ## New names:
+    ## * `Raw Ht` -> `Raw Ht...6`
+    ## * `Cor Ht` -> `Cor Ht...7`
+    ## * uM -> uM...8
+    ## * `Raw Ht` -> `Raw Ht...9`
+    ## * `Cor Ht` -> `Cor Ht...10`
+    ## * ... and 7 more problems
+
+    ## New names:
+    ## * `` -> ...1
+
+    ## Joining, by = "peak"
+    ## Joining, by = "peak"
+
+    ## New names:
+    ## * `Raw Ht` -> `Raw Ht...6`
+    ## * `Cor Ht` -> `Cor Ht...7`
+    ## * uM -> uM...8
+    ## * `Raw Ht` -> `Raw Ht...9`
+    ## * `Cor Ht` -> `Cor Ht...10`
+    ## * ... and 7 more problems
+
+    ## New names:
+    ## * `` -> ...1
+
+    ## Joining, by = "peak"
+    ## Joining, by = "peak"
+
+    ## New names:
+    ## * `Raw Ht` -> `Raw Ht...6`
+    ## * `Cor Ht` -> `Cor Ht...7`
+    ## * uM -> uM...8
+    ## * `Raw Ht` -> `Raw Ht...9`
+    ## * `Cor Ht` -> `Cor Ht...10`
+    ## * ... and 7 more problems
+
+    ## New names:
+    ## * `` -> ...1
+
+    ## Joining, by = "peak"
+    ## Joining, by = "peak"
+
+    ## New names:
+    ## * `Raw Ht` -> `Raw Ht...6`
+    ## * `Cor Ht` -> `Cor Ht...7`
+    ## * uM -> uM...8
+    ## * `Raw Ht` -> `Raw Ht...9`
+    ## * `Cor Ht` -> `Cor Ht...10`
+    ## * ... and 7 more problems
+
+    ## New names:
+    ## * `` -> ...1
+
+    ## Joining, by = "peak"
+    ## Joining, by = "peak"
 
 data definitions
 ----------------
