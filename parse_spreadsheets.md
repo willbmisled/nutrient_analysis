@@ -1,7 +1,7 @@
 parse\_spreadsheets
 ================
 bryan
-23 April 2019
+24 April 2019
 
 Introduction
 ------------
@@ -399,28 +399,36 @@ data definitions
 <td>value of second nitrogen blank in a group of observations; NA indicates value is an outlier or missing.</td>
 </tr>
 <tr class="odd">
+<td>n_mean_b_um</td>
+<td>mean of the two blanks [(n_b_um1 + n_b_um2) / 2]; NA indicates both blanks are missing or outliers.</td>
+</tr>
+<tr class="even">
 <td>p_raw_ht</td>
 <td>from the operator. Added &quot;p_&quot; to indicate this is a phosphorus sample</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>p_cor_ht</td>
 <td>from the operator. Added &quot;p_&quot; to indicate this is a phosphorus sample</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>p_um</td>
 <td>from the operator. Added &quot;p_&quot; to indicate this is a phosphorus sample. This is the uncorrected phosphorus concentration.</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>p_um_cor</td>
-<td>corrected phosphorus concentration (p_um - p_meap_b_um); NOTE if NA this could mean that p_um &amp;/or p_mean_b_um is missing. Check manually.</td>
+<td>corrected phosphorus concentration (p_um - p_mean_b_um); NOTE if NA this could mean that p_um &amp;/or p_mean_b_um is missing. Check manually.</td>
+</tr>
+<tr class="even">
+<td>p_b_um1</td>
+<td>value of first phosphorus blank in a group of observations; NA indicates value is an outlier or are missing.</td>
 </tr>
 <tr class="odd">
-<td>p_b_um1</td>
-<td>value of first phosphorus blank in a group of observations; NA indicates value is an outlier or missing.</td>
-</tr>
-<tr class="even">
 <td>p_b_um2</td>
 <td>value of second phosphorus blank in a group of observations; NA indicates value is an outlier or missing.</td>
+</tr>
+<tr class="even">
+<td>p_mean_b_um</td>
+<td>mean of the two blanks [(p_b_um1 + p_b_um2) / 2]; NA indicates both blanks are missing or are outliers.</td>
 </tr>
 <tr class="odd">
 <td>run_name</td>
